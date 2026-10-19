@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+type: software
+title: energybench
+abstract: >-
+  Python client for EnergyBench: search the open catalog of real-world
+  electricity generation and weather data, and load the data lazily.
+authors:
+  - name: RenewBench Association
+    email: renewbench@lists.kit.edu
+version: "0.0.0" # x-release-please-version
+license: MIT
+url: https://energybench.org
+repository-code: https://github.com/RenewBench-Association/energybench
+keywords:
+  - energy
+  - weather
+  - benchmark
+  - STAC
+  - Zarr
+preferred-citation:
+  type: generic
+  title: "EnergyBench: Real Energy Data You Can Actually Use"
+  year: 2026
+  url: https://energybench.org
+  authors:
+    - family-names: Vollmer
+      given-names: Elena
+    - family-names: Beckert
+      given-names: Andreas
+    - family-names: Keil
+      given-names: Pau
+    - family-names: Schäfer
+      given-names: Benjamin
+    - family-names: Geyer
+      given-names: Beate
+    - family-names: Götz
+      given-names: Markus
+    - family-names: Weigel
+      given-names: Tobias
+    - family-names: Phipps
+      given-names: Kaleb

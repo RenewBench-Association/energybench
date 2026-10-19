@@ -1,0 +1,42 @@
+/* EnergyBench brand colors (from the logo suite's palette). */
+
+/* Light scheme: navy primary color, teal accents and links. */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #182d39;
+  --md-primary-fg-color--light: #2a4554;
+  --md-primary-fg-color--dark: #0f1f28;
+  --md-accent-fg-color: #007e72;
+  --md-typeset-a-color: #007e72;
+}
+
+/* Dark scheme: night-blue surface, bright teal accents and links. */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #142632;
+  --md-primary-fg-color--light: #233a48;
+  --md-primary-fg-color--dark: #0c1820;
+  --md-accent-fg-color: #48ceb5;
+  --md-typeset-a-color: #48ceb5;
+  --md-default-bg-color: #142632;
+}
+
+/* The wordmark on the home page. */
+.eb-wordmark {
+  display: block;
+  width: min(100%, 26rem);
+  margin: 0.5rem auto 1.5rem;
+}
+
+/* The header logo follows the site's light/dark toggle: the <img> keeps its
+   alt text but is transparent, and the matching mark is drawn behind it. */
+.md-logo img {
+  opacity: 0;
+}
+
+.md-logo {
+  background: url("../assets/logo/energybench-e-light.svg") center / contain no-repeat;
+  background-origin: content-box;
+}
+
+[data-md-color-scheme="slate"] .md-logo {
+  background-image: url("../assets/logo/energybench-e-dark.svg");
+}

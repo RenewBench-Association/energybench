@@ -1,0 +1,33 @@
+name: PR title
+
+# Pull requests are squash-merged, so the title becomes the commit message on
+# main that release-please reads. It must be a Conventional Commit, with the
+# same types the commit-msg hook accepts.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    name: pr-title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check the title is a Conventional Commit
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([[:alnum:]._/-]+\))?!?: [^[:space:]].*$'
+          if [[ "$TITLE" =~ $pattern ]]; then
+            echo "The title is a valid Conventional Commit."
+          else
+            echo "::error::The PR title must be a Conventional Commit, for example 'feat: add Catalog.search' or 'fix(io)!: drop Zarr v2'."
+            exit 1
+          fi

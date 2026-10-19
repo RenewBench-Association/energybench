@@ -1,0 +1,111 @@
+name: Release test
+
+# A dry run of a release, triggered only by pushing main to the `release-test`
+# branch (git push origin main:release-test). It publishes a unique
+# pre-release build to TestPyPI, installs that build on every supported
+# platform and Python version, and runs the tests against it.
+on:
+  push:
+    branches: [release-test]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  build:
+    name: Build pre-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: false
+      - name: Give this build a unique pre-release version
+        id: version
+        run: |
+          version="$(uv version --short).dev${GITHUB_RUN_NUMBER}${GITHUB_RUN_ATTEMPT}"
+          uv version --frozen "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: hynek/build-and-inspect-python-package@2abe76da66d0a6a4a227101f9348ee855797cfa5 # v3.0.1
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/energybench/${{ needs.build.outputs.version }}/
+    permissions:
+      id-token: write # Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: Packages
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  test-from-testpypi:
+    name: Test TestPyPI build (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    needs: [build, publish-testpypi]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.12", "3.13", "3.14", "3.15"]
+    defaults:
+      run:
+        shell: bash
+    env:
+      VERSION: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Download only energybench from TestPyPI
+        # Dependencies always come from PyPI, so nothing else on TestPyPI can
+        # end up in the environment. Retry while the new upload propagates.
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if python -m pip download --no-deps --only-binary=:all: \
+                --index-url https://test.pypi.org/simple/ \
+                --dest "$RUNNER_TEMP/testpypi" "energybench==$VERSION"; then
+              exit 0
+            fi
+            echo "Not on the TestPyPI index yet (attempt $attempt); retrying in 20 s."
+            sleep 20
+          done
+          exit 1
+      - name: Install it with pip
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --find-links "$RUNNER_TEMP/testpypi" "energybench==$VERSION"
+          python -m pip install --group test
+      - name: Run the tests against the installed package
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "$GITHUB_WORKSPACE/tests"
+        env:
+          ENERGYBENCH_TEST_INSTALLED: "1"

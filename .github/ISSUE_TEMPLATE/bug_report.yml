@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in energybench does not work as documented.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: A minimal code example, ideally runnable as is.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Error output
+      description: The full traceback or log output, if any.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: energybench version
+      description: Output of `python -c "import energybench; print(energybench.__version__)"`.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Python version and operating system
+      placeholder: Python 3.13 on Ubuntu 24.04
+    validations:
+      required: true

@@ -1,0 +1,19 @@
+# A pull request fails if it lowers overall coverage, or the coverage of the
+# changed code, by more than 5 %. CI also enforces its own 90 % floor (see
+# pyproject.toml).
+coverage:
+  status:
+    project:
+      default:
+        threshold: 5%
+    patch:
+      default:
+        threshold: 5%
+
+comment:
+  layout: "condensed_header, diff, flags, files"
+  require_changes: false
+
+ignore:
+  - "tests/**"
+  - "docs/**"

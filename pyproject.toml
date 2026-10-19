@@ -1,0 +1,110 @@
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14"]
+build-backend = "uv_build"
+
+[project]
+name = "energybench"
+version = "0.0.0"
+description = "Python client for EnergyBench: search open energy and weather data and load it lazily."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "RenewBench Association", email = "renewbench@lists.kit.edu" }]
+maintainers = [{ name = "Kaleb Phipps", email = "kaleb.phipps@kit.edu" }]
+requires-python = ">=3.12"
+keywords = ["energy", "weather", "benchmark", "stac", "xarray", "zarr", "icechunk"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://energybench.org"
+Documentation = "https://energybench.readthedocs.io"
+Repository = "https://github.com/RenewBench-Association/energybench"
+Issues = "https://github.com/RenewBench-Association/energybench/issues"
+Changelog = "https://github.com/RenewBench-Association/energybench/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+test = ["pytest>=9.1", "coverage>=7.16"]
+typing = ["pyrefly>=1.4"]
+lint = ["prek>=0.5.5", "ruff>=0.17.1"]
+docs = ["zensical>=0.0.70", "mkdocstrings-python>=2.0.9"]
+dev = [
+    { include-group = "test" },
+    { include-group = "typing" },
+    { include-group = "lint" },
+    { include-group = "docs" },
+]
+
+[tool.uv.build-backend]
+module-name = "energybench"
+module-root = ""
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# N naming, E/F errors, D docstrings, I import order, UP modern syntax,
+# B likely bugs, ANN type hints, SIM/C4 simpler code, PT pytest style and
+# RUF ruff's own checks.
+select = ["N", "E4", "E7", "E9", "F", "D", "I", "UP", "B", "ANN", "SIM", "C4", "PT", "RUF"]
+extend-select = [
+    "D417", # every argument documented in Args
+    "D419", # no empty docstrings
+]
+ignore = [
+    "D100", # module docstrings are optional
+    "D104", # package docstrings are optional
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.typos.default]
+# Comments, docstrings and docs use American English.
+locale = "en-us"
+
+[tool.pyrefly]
+project-includes = ["energybench", "tests"]
+python-version = "3.12"
+preset = "strict"
+
+[tool.pytest]
+minversion = "9.1"
+strict = true
+testpaths = ["tests"]
+addopts = ["-ra", "--import-mode=importlib"]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+parallel = true
+source_pkgs = ["energybench"]
+
+[tool.coverage.paths]
+# Data from Linux, macOS and Windows runners is combined into one report.
+energybench = ["energybench/", "energybench\\"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@overload",
+    "raise NotImplementedError",
+    "^\\s*\\.\\.\\.$",
+]

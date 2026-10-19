@@ -1,0 +1,11 @@
+# Default reviewers for every change.
+* @emvollmer
+* @andreasb23
+* @kalebphipps
+
+# The release machinery: changes need a review from the core release team, so
+# nobody can weaken the release gate or the publishing workflows unnoticed.
+/.github/ @RenewBench-Association/energybench-release
+/RELEASE.md @RenewBench-Association/energybench-release
+/release-please-config.json @RenewBench-Association/energybench-release
+/.release-please-manifest.json @RenewBench-Association/energybench-release
