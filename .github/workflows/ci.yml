@@ -115,7 +115,7 @@ jobs:
       - uses: hynek/build-and-inspect-python-package@2abe76da66d0a6a4a227101f9348ee855797cfa5 # v3.0.1
 
   test-pip:
-    name: Test sdist with plain pip
+    name: Test sdist with pip
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -132,12 +132,20 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: Build and install the sdist with pip, no uv involved
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - name: Export the locked test dependencies with hashes
+        run: |
+          uv export --locked --no-emit-project --no-default-groups --group test \
+            --format requirements-txt --output-file "$RUNNER_TEMP/test-requirements.txt"
+      - name: Build the sdist and install everything with pip
+        # uv only reads the lockfile above; pip does all building and
+        # installing. Building a wheel from the sdist runs the uv_build
+        # backend exactly as any pip user would.
         run: |
           python -m venv "$RUNNER_TEMP/venv"
-          "$RUNNER_TEMP/venv/bin/python" -m pip install --upgrade pip
-          "$RUNNER_TEMP/venv/bin/python" -m pip install "$RUNNER_TEMP"/dist/*.tar.gz
-          "$RUNNER_TEMP/venv/bin/python" -m pip install --group test
+          "$RUNNER_TEMP/venv/bin/python" -m pip install --require-hashes -r "$RUNNER_TEMP/test-requirements.txt"
+          "$RUNNER_TEMP/venv/bin/python" -m pip wheel --no-deps --wheel-dir "$RUNNER_TEMP/wheel" "$RUNNER_TEMP"/dist/*.tar.gz
+          "$RUNNER_TEMP/venv/bin/python" -m pip install --no-deps "$RUNNER_TEMP"/wheel/*.whl
       - name: Run the tests against the installed package
         working-directory: ${{ runner.temp }}
         run: '"$RUNNER_TEMP/venv/bin/pytest" "$GITHUB_WORKSPACE/tests"'
